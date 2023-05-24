@@ -29,6 +29,7 @@ import java.security.cert.X509Certificate
 import javax.net.ssl.*
 
 const val LETS_ENCRYPT_ROOT_SHA256 = "NgJeUutmfGsIONh0XaovCA5VJ05uv2gCb27pUOpTPxU="
+const val MANUAL_CUSTOM_CN = "sha256.badssl.com"
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -239,9 +240,11 @@ class MainActivity : AppCompatActivity() {
 
                 val certs = socket.session.peerCertificates
 
-                if (!certs.any { cert -> doesCertMatchPin(LETS_ENCRYPT_ROOT_SHA256, cert) }) {
+                // if (!certs.any { cert -> doesCertMatchPin(LETS_ENCRYPT_ROOT_SHA256, cert) }) {
+                if (!certs.any { cert -> doesCertMatchPin(MANUAL_CUSTOM_CN, cert) }) {
                     socket.close() // Close the socket immediately without sending a request
-                    throw Error("Unrecognized cert hash.")
+                    // throw Error("Unrecognized cert hash.")
+                    throw Error ("Unrecognized common name.")
                 }
 
                 // Send a real request, just to make it clear that we trust the connection:
@@ -266,7 +269,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun doesCertMatchPin(pin: String, cert: Certificate): Boolean {
-        val certHash = cert.publicKey.encoded.toByteString().sha256()
-        return certHash == pin.decodeBase64()
+        // val certHash = cert.publicKey.encoded.toByteString().sha256()
+        // return certHash == pin.decodeBase64()
+        val certCN = cert.hostname
+        return certCN == pin
     }
+    
 }
